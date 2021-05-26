@@ -3,10 +3,11 @@ import generateDots from "../accessories/generateDots.js";
 import useInterval from "../accessories/useInterval.js";
 import noise from "noisejs";
 function Perlin(props) {
-    const { xDots, yDots, width, height } = props;
+    const { density, width, height, zMax } = props;
+    const xDots = density * width/100;
+    const yDots = density * height/100;
     const initialState = {
         noiseMap: new noise.Noise(Math.random()),
-        colorMap: new noise.Noise(Math.random()),
         xoff: 0,
         yoff: 0,
         dots: generateDots({ xDots, yDots, width, height }),
@@ -16,11 +17,12 @@ function Perlin(props) {
             case "UPDATE_DOTS":
                 const newState = { ...state };
                 newState.dots = [...newState.dots].map(dot => {
-                    const z = 12 * state.noiseMap.simplex2((dot.x + state.xoff) / 100, (dot.y + state.yoff) / 100);
+                    const z = zMax * state.noiseMap.simplex2((dot.x + state.xoff) / 100, (dot.y + state.yoff) / 100);
                     return ({
                         ...dot,
                         z,
-                        h: Math.floor(359 * Math.abs(state.colorMap.simplex2(z/10, 0)))
+                        l: Math.floor((50) * (z + zMax) / zMax),
+                        size: (state.noiseMap.simplex2(dot.y/100, dot.x/100) + 2) * 1.2
                     })
                 });
                 newState.xoff = state.xoff + 1;
@@ -43,17 +45,20 @@ function Perlin(props) {
             style={{
                 position: "relative",
                 margin: "1rem auto",
-                perspective: "500px",
+                perspective: `${width}px`,
                 width: `${width}px`,
-                height: `${height}px`
+                height: `${height}px`,
+                border: "1px solid #555",
+                boxShadow: "5px 5px 5px 0 #050505",
+                borderRadius: "0.25rem",
+                backgroundColor: "black",
+                overflow: "hidden"
             }}
         >
             <div className="dot plane" style={{
                 position: "absolute",
-                top: "50%",
-                left: "0%",
-                transform: "rotate3d(1, 0, 0, 70deg) translateY(100px)",
-                transformStyle: "preserve-3d"
+                transform: `rotate3d(1, 0, 0, 60deg) translateY(${height / 2}px)`,
+                transformStyle: "preserve-3d",
             }}>
                 {state.dots.length > 0 && state.dots.map((dot, index) => {
                     return (
@@ -64,10 +69,10 @@ function Perlin(props) {
                             position: "absolute",
                             left: dot.x,
                             top: dot.y,
-                            backgroundColor: `hsl(${dot.h}, 50%, 75%)`,
-                            boxShadow: `0 0 3px 0 hsl(${dot.h}, 50%, 75%)`,
-                            width: "2px",
-                            height: "2px",
+                            backgroundColor: `hsl(${dot.h}, 50%, ${dot.l}%)`,
+                            boxShadow: `0 0 ${dot.size}px 0 hsl(${dot.h}, 50%, ${dot.l}%)`,
+                            width: `${dot.size}px`,
+                            height: `${dot.size}px`,
                             borderRadius: "50%",
                             transform: `translateZ(${dot.z}px)`,
                             transformStyle: "preserve-3d",
@@ -81,6 +86,6 @@ function Perlin(props) {
     )
 }
 Perlin.defaultProps = {
-    xDots: 40, yDots: 20, width: 800, height: 400 
+    density: 6, width: 600, height: 300, zMax: 12
 }
 export default Perlin;
