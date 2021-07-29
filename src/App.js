@@ -1,29 +1,19 @@
-import PerlinSI from "./components/PerlinSI.js";
-import PerlinCSS from "./components/PerlinCSS.js";
-import PerlinRAF from "./components/PerlinRAF.js";
+import Perlin from "./components/Perlin.js";
+import Sound from "./components/Sound.js";
 import { useState } from "react";
 import "./App.css";
 function App() {
-  const [implementation, setImplementation] = useState("RAF");
+  const [width, setWidth] = useState(window.innerWidth / 2);
+  const [noise, setNoise] = useState();
+  window.onresize = () => {
+    window.innerWidth < 1200 &&  setWidth(window.innerWidth / 2);
+  };
   return (
     <>
       {/* <Perlin {...{ density: 6, width: 800, height: 800 }}/> */}
       <h1>Perlin Noise Landscape</h1>
-      <div className="button-row">
-        <p>implementation: </p>
-        <button onClick={() => setImplementation("SI")}>
-          setInterval (100ms)
-        </button>
-        <button onClick={() => setImplementation("CSS")}>
-          css transitions (1/sec)
-        </button>
-        <button onClick={() => setImplementation("RAF")}>
-          requestAnimationFrame
-        </button>
-      </div>
-      {implementation === "SI" && <PerlinSI />}
-      {implementation === "CSS" && <PerlinCSS />}
-      {implementation === "RAF" && <PerlinRAF />}
+      <Perlin width={width} setNoise={setNoise}/>
+      <Sound noise={noise}/>
     </>
   );
 }
