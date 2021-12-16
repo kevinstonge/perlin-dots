@@ -9,7 +9,8 @@
 }
 
 h1 {
-  font-size: 2rem;
+  font-size: 1.6rem;
+  color: hsl(250, 50%, 50%);
 }
 
 .button-row {

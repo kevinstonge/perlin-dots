@@ -10,6 +10,8 @@ function Perlin(props) {
     xoff: 0,
     yoff: 0,
     dots: generateDots({ xDots, yDots, width, height }),
+    yRot: 0,
+    xRot: 65,
   };
   const reducer = (state, action) => {
     let newState = state;
@@ -27,7 +29,7 @@ function Perlin(props) {
             ...dot,
             z,
             l: Math.floor((50 * (z + zMax)) / zMax),
-            size: (state.noiseMap.simplex2(dot.y / 100, dot.x / 100) + 2),
+            size: state.noiseMap.simplex2(dot.y / 100, dot.x / 100) + 2,
           };
         });
         newState.xoff = state.xoff + 1;
@@ -36,6 +38,11 @@ function Perlin(props) {
       case "NEW_DOTS":
         newState = { ...state };
         newState.dots = generateDots({ xDots, yDots, width, height });
+        return newState;
+      case "CHANGE_ROTATION":
+        newState = { ...state };
+        newState.yRot = action.payload.yRot;
+        newState.xRot = action.payload.xRot;
         return newState;
       default:
         return state;
@@ -59,85 +66,99 @@ function Perlin(props) {
   }, [animate]);
   useEffect(() => {
     dispatch({ type: "NEW_DOTS" });
-  },[props.width])
+  }, [props.width]);
+  useEffect(() => {
+    window.addEventListener("mousemove", (e) => {
+      const relativeX = e.clientX / window.innerWidth;
+      const yRot = 40 * relativeX - 20;
+      const relativeY = e.clientY / window.innerHeight;
+      //0=60 1=70
+      //60 to 70
+      const xRot = -10 * relativeY + 70;
+      dispatch({ type: "CHANGE_ROTATION", payload: { yRot, xRot } });
+    });
+  }, []);
   return (
     <>
-    <div
-      className="perlin-frame"
-      style={{
-        position: 'relative',
-        width:`${width*1.8}px`,
-        backgroundColor: "black",
-        boxShadow: "0 0 50px 50px black",
-        overflow: "hidden",
-        zIndex: "-1",
-      }}
-    >
       <div
-        className="dot-container"
+        className="perlin-frame"
         style={{
           position: "relative",
-          margin: "1rem auto",
-          perspective: `${width}px`,
-          width: `${width}px`,
-          height: `${height}px`,
+          width: `${width * 1.8}px`,
+          backgroundColor: "black",
+          boxShadow: "0 0 50px 50px black",
+          overflow: "hidden",
+          zIndex: "-1",
         }}
       >
         <div
-          className="dot plane"
+          className="dot-container"
+          style={{
+            position: "relative",
+            margin: "1rem auto",
+            perspective: `${width}px`,
+            width: `${width}px`,
+            height: `${height}px`,
+          }}
+        >
+          <div
+            className="dot plane"
+            style={{
+              position: "absolute",
+              top: "0",
+              left: "0",
+              width: "100%",
+              height: "100%",
+              transform: `rotateY(${state.yRot}deg) rotateX(${
+                state.xRot //+65?
+              }deg) translateZ(${height / 3}px) translateY(${height / 2}px)`,
+              transformStyle: "preserve-3d",
+              zIndex: "0",
+            }}
+          >
+            {state.dots.length > 0 &&
+              state.dots.map((dot, index) => {
+                return (
+                  <div
+                    className="dot"
+                    key={`dot-${index}`}
+                    style={{
+                      position: "absolute",
+                      left: dot.x,
+                      top: dot.y,
+                      backgroundColor: `hsl(${dot.h}, 50%, ${dot.l}%)`,
+                      boxShadow: `0 0 ${dot.size + 1}px 1px hsl(${
+                        dot.h
+                      }, 75%, ${dot.l}%)`,
+                      width: `${dot.size}px`,
+                      height: `${dot.size}px`,
+                      borderRadius: "50%",
+                      transform: `translateZ(${dot.z}px)`,
+                      transformStyle: "preserve-3d",
+                    }}
+                  ></div>
+                );
+              })}
+          </div>
+        </div>
+        <div
           style={{
             position: "absolute",
             top: "0",
             left: "0",
             width: "100%",
             height: "100%",
-            // transform: `rotate3d(1, 0, 0, 65deg) translateZ(${height / 3}px) translateY(${height/2}px)`,
-            transform: `rotateY(20deg) rotateX(65deg) translateZ(${height / 3}px) translateY(${height/2}px)`,
-            transformStyle: "preserve-3d",
-            zIndex: "0"
+            backgroundImage:
+              "linear-gradient(to right, black 0, transparent 10%, transparent 90%, black 100%",
+            zIndex: "2",
           }}
-        >
-          {state.dots.length > 0 &&
-            state.dots.map((dot, index) => {
-              return (
-                <div
-                  className="dot"
-                  key={`dot-${index}`}
-                  style={{
-                    position: "absolute",
-                    left: dot.x,
-                    top: dot.y,
-                    backgroundColor: `hsl(${dot.h}, 50%, ${dot.l}%)`,
-                    boxShadow: `0 0 ${dot.size+1}px 1px hsl(${dot.h}, 75%, ${dot.l}%)`,
-                    width: `${dot.size}px`,
-                    height: `${dot.size}px`,
-                    borderRadius: "50%",
-                    transform: `translateZ(${dot.z}px)`,
-                    transformStyle: "preserve-3d"
-                  }}
-                ></div>
-              );
-            })}
-        </div>
+        ></div>
       </div>
-      <div
-        style={{
-          position: "absolute",
-          top: "0",
-          left: "0",
-          width: "100%",
-          height: "100%",
-          backgroundImage: "linear-gradient(to right, black 0, transparent 10%, transparent 90%, black 100%",
-          zIndex: "2"
-        }}
-      >
-        </div>
-      </div>
-      </>
+    </>
   );
 }
 Perlin.defaultProps = {
-  density: 3,
+  density: 2,
   width: 600,
   height: 300,
   zMax: 12,
