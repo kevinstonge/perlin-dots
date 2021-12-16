@@ -91,7 +91,8 @@ function Perlin(props) {
             left: "0",
             width: "100%",
             height: "100%",
-            transform: `rotate3d(1, 0, 0, 65deg) translateZ(${height / 3}px) translateY(${height/2}px)`,
+            // transform: `rotate3d(1, 0, 0, 65deg) translateZ(${height / 3}px) translateY(${height/2}px)`,
+            transform: `rotateY(20deg) rotateX(65deg) translateZ(${height / 3}px) translateY(${height/2}px)`,
             transformStyle: "preserve-3d",
             zIndex: "0"
           }}
@@ -136,7 +137,7 @@ function Perlin(props) {
   );
 }
 Perlin.defaultProps = {
-  density: 5,
+  density: 3,
   width: 600,
   height: 300,
   zMax: 12,

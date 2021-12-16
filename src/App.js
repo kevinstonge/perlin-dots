@@ -13,7 +13,7 @@ function App() {
       {/* <Perlin {...{ density: 6, width: 800, height: 800 }}/> */}
       <h1>Perlin Noise Landscape</h1>
       <Perlin width={width} setNoise={setNoise}/>
-      <Sound noise={noise}/>
+      {/* <Sound noise={noise}/> */}
     </>
   );
 }
